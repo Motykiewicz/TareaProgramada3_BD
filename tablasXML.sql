@@ -17,12 +17,13 @@ CREATE TABLE dbo.st_Propiedad(
 );
 GO
 
-IF OBJECT_ID('dbo.st_PropiedadPersona','U') IS NOT NULL DROP TABLE dbo.st_PropiedadPersona;
-CREATE TABLE dbo.st_PropiedadPersona(
-  Finca          VARCHAR(32) NOT NULL,
+IF OBJECT_ID('dbo.st_Persona','U') IS NOT NULL DROP TABLE dbo.st_Persona;
+CREATE TABLE dbo.st_Persona(
   Identificacion VARCHAR(32) NOT NULL,
-  FechaInicio    DATE        NOT NULL,
-  FechaFin       DATE        NULL
+  Nombre         VARCHAR(128) NOT NULL,
+  Email          VARCHAR(100) NULL,
+  Telefono1      VARCHAR(20)  NULL,
+  Telefono2      VARCHAR(20)  NULL
 );
 GO
 

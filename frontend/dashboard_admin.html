@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Panel administrador</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="contenedor">
+    <h1>Panel de administración</h1>
+
+    <div class="card">
+      <p id="usuarioConectado"></p>
+      <button onclick="window.location.href='login.html'">Cerrar sesión</button>
+    </div>
+
+    <div class="card">
+      <h2>Resumen rápido (demo)</h2>
+      <p>Más adelante aquí podemos poner:</p>
+      <ul>
+        <li>Total de propiedades registradas.</li>
+        <li>Cantidad de facturas pendientes.</li>
+        <li>Listado de fincas morosas.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Propiedades (vista admin)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Finca</th>
+            <th>Zona</th>
+            <th>Uso</th>
+            <th>Propietario</th>
+            <th>Deuda pendiente</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPropiedadesAdmin">
+          <!-- Demo, luego API -->
+          <tr>
+            <td>F-0007</td>
+            <td>urbana</td>
+            <td>residencial</td>
+            <td>Valeria Solano</td>
+            <td>15 000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

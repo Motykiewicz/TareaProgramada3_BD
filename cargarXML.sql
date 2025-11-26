@@ -6,7 +6,7 @@ GO
    aqui vamos a cargar, para un @dia específico, los datos del archivo xmlUltimo.xml a las tablas st_*.
 */
 
-DECLARE @dia date = '2025-10-28';   -- aqui podemos cambiar el dia a procesar (2025-07-08) para pagos (2025-06-01) para personas y propiedades
+DECLARE @dia date = '2025-06-01';   -- aqui podemos cambiar el dia a procesar (2025-07-08) para pagos (2025-06-01) para personas y propiedades
 DECLARE @x   xml;
 DECLARE @d   xml;
 
@@ -48,11 +48,17 @@ DELETE FROM st_Persona;
 -- Cargar tablas st desde @d ( las rutas alineadas al XML 
 
 
--- Personas: valorDocumento y Identificacion
-INSERT INTO st_Persona (Identificacion, Nombre)
-SELECT P.value('@valorDocumento', 'varchar(32)'),
-       P.value('@nombre',         'varchar(128)')
-FROM   @d.nodes('/FechaOperacion/Personas/Persona') AS T(P);
+
+-- Personas: valorDocumento, nombre, email y telefono
+INSERT INTO st_Persona (Identificacion, Nombre, Email, Telefono1, Telefono2)
+SELECT
+    P.value('@valorDocumento', 'varchar(32)'),
+    P.value('@nombre',         'varchar(128)'),
+    P.value('@email',          'varchar(100)'),
+    P.value('@telefono',       'varchar(20)'),
+    NULL  -- no sale un segundo telefono en el xml asi que se queda null 
+FROM @d.nodes('/FechaOperacion/Personas/Persona') AS T(P);
+
 
 -- Propiedades: numeroFinca, tipoZonaId, tipoUsoId, fechaRegistro
 INSERT INTO st_Propiedad (Finca, Zona, Uso, FechaRegistro)
@@ -107,3 +113,4 @@ SELECT Pg.value('@numeroFinca',      'varchar(32)'),
        Pg.value('@numeroReferencia', 'varchar(64)')
 FROM   @d.nodes('/FechaOperacion/Pagos/Pago') AS T(Pg);
 
+SELECT TOP 10 * FROM st_Persona;

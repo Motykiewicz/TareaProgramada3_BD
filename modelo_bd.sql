@@ -3,11 +3,18 @@ GO
 
 IF OBJECT_ID('dbo.Persona','U') IS NOT NULL DROP TABLE dbo.Persona;
 CREATE TABLE dbo.Persona (
-	PersonaID INT IDENTITY(1,1) PRIMARY KEY, 
-	Identificacion VARCHAR(32) NOT NULL UNIQUE,
-	Nombre VARCHAR(64) NOT NULL
+    PersonaID INT IDENTITY(1,1) PRIMARY KEY, 
+    Identificacion VARCHAR(32) NOT NULL UNIQUE,
+    Nombre VARCHAR(64) NOT NULL,
+    Email VARCHAR(100) NULL,
+    Telefono1 VARCHAR(20) NULL,
+    Telefono2 VARCHAR(20) NULL
 );
 GO
+ALTER TABLE dbo.Persona
+ADD Email      VARCHAR(100) NOT NULL DEFAULT 'sin-correo@ejemplo.org',
+    Telefono1  VARCHAR(20)  NOT NULL DEFAULT '0000-0000',
+    Telefono2  VARCHAR(20)  NULL;
 
 IF OBJECT_ID('dbo.Usuario','U') IS NOT NULL DROP TABLE dbo.Usuario;
 CREATE TABLE dbo.Usuario (
@@ -170,6 +177,7 @@ CREATE TABLE dbo.PropiedadPersona (
     CONSTRAINT CK_PropiedadPersona_Fechas CHECK (FechaFin IS NULL OR FechaFin > FechaInicio)
   );
 GO
+
 
 IF OBJECT_ID('dbo.UsuarioPropiedad','U') IS NOT NULL DROP TABLE dbo.UsuarioPropiedad;
 CREATE TABLE dbo.UsuarioPropiedad (

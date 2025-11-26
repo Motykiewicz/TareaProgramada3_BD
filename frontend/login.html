@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Ingreso - Municipalidad</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="contenedor">
+    <h1>Sistema de Pagos Municipalidad</h1>
+
+    <form id="loginForm" class="card">
+      <label>
+        Usuario:
+        <input type="text" id="username" required />
+      </label>
+
+      <label>
+        Contraseña:
+        <input type="password" id="password" required />
+      </label>
+
+      <button type="submit">Ingresar</button>
+
+      <p id="loginError" class="error"></p>
+    </form>
+
+    <p class="ayuda">
+      Pruebas:
+      <br>Admin → usuario: <strong>admin</strong> / clave: <strong>admin123</strong>
+      <br>Cliente → usuario: <strong>user_f0007</strong> / clave: <strong>user123</strong>
+    </p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

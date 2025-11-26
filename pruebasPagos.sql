@@ -39,6 +39,7 @@ WHERE Fecha = @FechaPago
 ORDER BY PagoID;
 
 
+
 -- 4. Aplicación de esos pagos a facturas
 SELECT pf.PagoID, pf.FacturaID, pf.MontoAplicado,
        p.Fecha, p.Referencia, pr.Finca

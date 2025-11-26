@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Mis propiedades - Cliente</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="contenedor">
+    <h1>Mis propiedades</h1>
+
+    <div class="card">
+      <p id="usuarioConectado"></p>
+      <button onclick="window.location.href='login.html'">Cerrar sesión</button>
+    </div>
+
+    <div class="card">
+      <h2>Listado de propiedades</h2>
+
+      <!-- Más adelante llenamos esta tabla desde /api/propiedades -->
+      <table>
+        <thead>
+          <tr>
+            <th>Finca</th>
+            <th>Zona</th>
+            <th>Uso</th>
+            <th>Valor fiscal</th>
+            <th>Deuda total pendiente</th>
+          </tr>
+        </thead>
+        <tbody id="tablaPropiedades">
+          <!-- Filas de ejemplo (luego las quitamos cuando usemos la API) -->
+          <tr>
+            <td>F-0007</td>
+            <td>urbana</td>
+            <td>residencial</td>
+            <td>50 000 000</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
