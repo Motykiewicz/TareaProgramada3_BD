@@ -1,0 +1,174 @@
+Mié 12
+
+ Definir alcance y reglas clave (emisión mensual por día de registro, intereses 2%/mes, pago a la más vieja, corte/reconexión, XML lecturas/ajustes).
+
+ Elegir stack (API + BD + front) y repos (carpetas /db, /procesos, /app, /docs).
+
+ Boceto del modelo lógico (entidades y relaciones principales).
+
+ Crear plantilla de bitácora (formato de entrada).
+
+ Bitácora: registrar 1 sesión (inicio/fin, horas, qué hiciste, dudas).
+
+Jue 13
+
+ Escribir DDL inicial: Persona, Propiedad, ConceptoCobro, PropiedadConceptoCobro, Factura, DetalleFactura.
+
+ Agregar Medidor, MovimientoMedidor (lecturas/ajustes), Pago, Orden (corte/reconexión), Bitacora.
+
+ Definir FKs e índices críticos (búsquedas por finca/identificación/estado).
+
+ Cargar catálogos y parámetros (valor m³, monto mínimo, días vencimiento, cargo reconexión).
+
+ Bitácora: 1 entrada con evidencia (DDL y diagrama).
+
+Vie 14
+
+ Trigger: al crear Propiedad ⇒ auto-asignar CC según reglas (impuesto, basura, parques…).
+
+ Trigger/proc de Bitácora genérica (antes/después, tabla, usuario, IP, timestamp).
+
+ SPs base de consulta: sp_login, sp_listar_propiedades_por_usuario, sp_facturas_por_finca.
+
+ Prueba rápida de inserciones y verificación de bitácora.
+
+ Bitácora: 1 entrada (triggers + pruebas).
+
+Sáb 15 (ocupado → liviano)
+
+ bosquejo diagramas: arquitectura, componentes, flujo “fin de día”.
+
+ Lista de casos borde (registro día 31, bisiestos, sin medidor, múltiples CC).
+
+ Bitácora: 1 entrada corta (30–40 min).
+
+Dom 16 (ocupado → liviano)
+
+ Definir métricas que medirás (horas, #tablas, #SPs, #commits, tiempos de scripts, etc.).
+
+ Plantilla de tabla Ítem vs Resultado (%) para el análisis.
+
+ Bitácora: 1 entrada corta.
+
+Lun 17
+
+ Procesador XML – fase 1: lectura de catálogos, personas y propiedades (validaciones básicas).
+
+ SPs de alta (sp_alta_persona, sp_alta_propiedad) integrados con Bitácora y trigger CC.
+
+ Semilla mínima de datos (2–3 propiedades, distintos usos/zonas).
+
+ Tests: insertar por XML, verificar asignación CC y bitácora.
+
+ Bitácora: 1 entrada con capturas.
+
+Mar 18 (ocupado → liviano)
+
+ Definir plan de pruebas por módulos (emisión, pagos, corte, reconexión, XML lecturas, intereses).
+
+ Armar dataset de fechas de registro (28/29/30/31) para probar emisión mensual.
+
+ Bitácora: 1 entrada corta (plan de pruebas).
+
+Mié 19
+
+ SP Emisión mensual: genera Factura + DetalleFactura por CC, calcula agua = max(Δm³*valor, mínimo).
+
+ Manejar 28/29/30/31 (ajuste al último día válido).
+
+ Actualizar M3AcumuladosUltimaFactura.
+
+ Tests: simular 2 meses para 3 propiedades (con y sin medidor).
+
+ Bitácora: 1 entrada con resultados (tablas/prints).
+
+Jue 20
+
+ SP Pago: aplica siempre a la factura más vieja; si vencida, interés 2%/mes.
+
+ Generar comprobante/registro de pago (y en bitácora).
+
+ Recalcular saldos pendientes tras pago parcial/múltiple.
+
+ Tests: pagos desordenados (usuario paga una nueva antes de la vieja → forzar lógica a la vieja).
+
+ Bitácora: 1 entrada con evidencia.
+
+Vie 21
+
+ SP Corte/Reconexion: si ≥2 facturas pendientes ⇒ corte + cargo reconexión; al quedar al día ⇒ reconectar.
+
+ Consultas de estado (pendientes, cortado, reconectado).
+
+ Tests: combinar emisión, impagos y luego pagos para ver órdenes generadas/cerradas.
+
+ Bitácora: 1 entrada.
+
+Sáb 22
+
+ Procesador XML – fase 2: MovimientoMedidor (lecturas) y ajustes (crédito/débito).
+
+ Actualización de acumulados y consistencia con emisión.
+
+ Tests E2E: un ciclo mensual con lecturas reales y ajustes.
+
+ Bitácora: 1 entrada (logs y capturas).
+
+Dom 23
+
+ Job/Script “Fin de día”: pipeline atómico (aplicar XML → pagos → emisión/intereses → corte/reconexión).
+
+ Simulación 3–4 meses con dataset pequeño y registros variados.
+
+ Recolectar métricas (tiempos, #SPs, #tablas, #órdenes, #facturas).
+
+ Armar gráfico simple (actividad por día o tiempos de ejecución).
+
+ Bitácora: 1–2 entradas (resultados + conclusiones preliminares).
+
+Lun 24 (entrega)
+
+ Análisis de Resultados (formato que te gustó):
+
+ Portada, Índices, Introducción, Contexto/Diagramas
+
+ Tabla Ítem vs Resultado (%) con comentarios
+
+ Métricas (tabla) + 1 gráfico
+
+ Conclusiones y trabajo futuro
+
+ Revisión checklist funcional completo (emisión, pago, intereses, corte/reconexión, XML, bitácora).
+
+ Verificación de evidencias (capturas, logs, commits) y empaquetado final.
+
+ Bitácora: última entrada (resumen y horas totales).
+
+Hitos de control (marca cuando estén listos)
+
+ DDL + FKs cerrados (13–14)
+
+ Triggers + Bitácora funcionando (14)
+
+ XML fase 1 (17)
+
+ Emisión mensual (19)
+
+ Pagos + 2% moratorio (20)
+
+ Corte/Reconexión (21)
+
+ XML fase 2 (22)
+
+ Fin de día E2E + simulación multi-mes (23)
+
+ Documento final (24)
+
+Fecha: AAAA-MM-DD
+Inicio – Fin: HH:MM – HH:MM  (Total: XhYm)
+Objetivo:
+Actividades:
+Problemas/Bloqueos:
+Cómo se resolvió:
+Evidencias (commits/capturas):
+Siguientes pasos:

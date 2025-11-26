@@ -1,0 +1,8 @@
+1) MERGE Personas
+2) MERGE Propiedades (dispara trigger CC)
+3) MERGE PropiedadPersona
+4) MERGE CC Impuesto (si aplica)
+5) MERGE Medidor
+6) MERGE Movimientos
+7) MERGE Pagos
+8) SP de emisión / intereses / cortes según corresponda a ese día
