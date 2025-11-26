@@ -2,19 +2,19 @@
 const express = require('express');
 const cors = require('cors');
 const sql = require('mssql');
+const crypto = require('crypto');
+const path = require('path');
 const dbConfig = require('./dbconfig');
 
 const app = express();
 const PORT = 3000;
 
-// 🔹 Middlewares
+// Middlewares
 app.use(cors());
-app.use(express.json());                      // JSON del fetch
-app.use(express.urlencoded({ extended: true })); // por si algún form manda x-www-form-urlencoded
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-
-// Servir archivos estáticos del frontend
-// (carpeta Tarea3BD/frontend)
+// Servir frontend estático (no choca con Live Server, pero igual queda bonito)
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Endpoint de prueba
@@ -22,7 +22,7 @@ app.get('/api/ping', (req, res) => {
   res.json({ ok: true, msg: 'pong desde backend Tarea3' });
 });
 
-// LOGIN: recibe { username, password } y valida contra la BD
+// LOGIN
 app.post('/api/login', async (req, res) => {
   try {
     const body = req.body || {};
@@ -80,6 +80,15 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.listen(PORT, async () => {
+  console.log(`Backend Tarea3 escuchando en http://localhost:${PORT}`);
+  try {
+    await sql.connect(dbConfig);
+    console.log('Conectado a SQL Server ');
+  } catch (err) {
+    console.error('Error al conectar con SQL Server ', err);
+  }
+});
 //    Admin: 
 //    Usuario: admin / Clave: admin123 
 //

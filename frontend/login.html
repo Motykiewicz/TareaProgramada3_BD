@@ -1,36 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <title>Ingreso - Municipalidad</title>
+  <meta charset="UTF-8" />
+  <title>Login - Tarea 3 BD</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="contenedor">
-    <h1>Sistema de Pagos Municipalidad</h1>
+  <div class="page">
+    <div class="card-shell">
+      <!-- Columna izquierda azul -->
+      <section class="card-left">
+        <div>
+          <h1>Sistema Municipalidad</h1>
+          <h2>Tarea 3 – Bases de Datos</h2>
+          <p>
+            Simulador de facturación, pagos y morosidad para la Tarea 3 de Bases de Datos.
+          </p>
+        </div>
+        <small>
+          Los usuarios se validan contra la tabla <strong>Usuario</strong> de SQL Server.
+        </small>
+      </section>
 
-    <form id="loginForm" class="card">
-      <label>
-        Usuario:
-        <input type="text" id="username" required />
-      </label>
+      <!-- Columna derecha con el formulario -->
+      <section class="card-right">
+        <h2>Iniciar sesión</h2>
+        <p>
+          Use <strong>admin / admin123</strong> o
+          <strong>user_f0007 / user123</strong> para las pruebas.
+        </p>
 
-      <label>
-        Contraseña:
-        <input type="password" id="password" required />
-      </label>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Usuario</label>
+            <input
+              type="text"
+              id="username"
+              autocomplete="username"
+              placeholder="admin o user_f0007"
+            />
+          </div>
 
-      <button type="submit">Ingresar</button>
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              autocomplete="current-password"
+              placeholder="admin123 o user123"
+            />
+          </div>
 
-      <p id="loginError" class="error"></p>
-    </form>
+          <button type="submit" class="btn-primary">Ingresar</button>
 
-    <p class="ayuda">
-      Pruebas:
-      <br>Admin → usuario: <strong>admin</strong> / clave: <strong>admin123</strong>
-      <br>Cliente → usuario: <strong>user_f0007</strong> / clave: <strong>user123</strong>
-    </p>
-  </main>
+          <div id="login-error" class="error" style="display:none;"></div>
+        </form>
+      </section>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

@@ -1,45 +1,83 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <title>Mis propiedades - Cliente</title>
+  <meta charset="UTF-8" />
+  <title>Mis propiedades - Tarea 3 BD</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <main class="contenedor">
+<body class="dashboard-page">
+<header class="topbar">
+  <div>
     <h1>Mis propiedades</h1>
+    <p>Vista de cliente – Sistema de facturación municipal</p>
+    <p id="cliente-username">Cliente:</p>
+  </div>
 
-    <div class="card">
-      <p id="usuarioConectado"></p>
-      <button onclick="window.location.href='login.html'">Cerrar sesión</button>
-    </div>
+  <!-- El texto y la acción los controla JS -->
+  <button id="btnClienteHeader" class="btn-secondary"></button>
+</header>
 
-    <div class="card">
-      <h2>Listado de propiedades</h2>
 
-      <!-- Más adelante llenamos esta tabla desde /api/propiedades -->
-      <table>
-        <thead>
-          <tr>
-            <th>Finca</th>
-            <th>Zona</th>
-            <th>Uso</th>
-            <th>Valor fiscal</th>
-            <th>Deuda total pendiente</th>
-          </tr>
-        </thead>
-        <tbody id="tablaPropiedades">
-          <!-- Filas de ejemplo (luego las quitamos cuando usemos la API) -->
-          <tr>
-            <td>F-0007</td>
-            <td>urbana</td>
-            <td>residencial</td>
-            <td>50 000 000</td>
-            <td>0</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <main>
+    <!-- Primer bloque: resumen -->
+    <section class="dashboard-card">
+      <div class="card-shell">
+        <div class="card-left">
+          <div>
+            <h2>Resumen de la cuenta</h2>
+            <p>
+              Aquí se muestra el resumen general de la cuenta del usuario
+              (total de propiedades y deuda total pendiente).
+            </p>
+          </div>
+        </div>
+
+        <div class="card-right">
+          <p>
+            Más adelante acá puedes colocar totales traídos del backend
+            (cantidad de propiedades, monto total adeudado, etc.).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Segundo bloque: tabla de propiedades -->
+    <section class="dashboard-card">
+      <div class="card-shell">
+        <div class="card-left">
+          <div>
+            <h2>Listado de propiedades</h2>
+            <p>
+              Detalle de cada finca con su zona, uso, valor fiscal y deuda pendiente.
+            </p>
+          </div>
+        </div>
+
+        <div class="card-right table-wrapper">
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Finca</th>
+                <th>Zona</th>
+                <th>Uso</th>
+                <th>Valor fiscal</th>
+                <th>Deuda total pendiente</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-propiedades">
+              <!-- Ejemplo de fila estática de momento -->
+              <tr>
+                <td>F-0007</td>
+                <td>Urbana</td>
+                <td>Residencial</td>
+                <td>₡50 000 000</td>
+                <td>₡0</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="script.js"></script>
