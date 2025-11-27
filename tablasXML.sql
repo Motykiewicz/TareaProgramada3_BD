@@ -1,3 +1,6 @@
+-- tablas staging en donde cargamos los datos del xml 
+
+
 USE TP3_Municipalidad;
 GO
 

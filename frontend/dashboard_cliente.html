@@ -5,37 +5,51 @@
   <title>Mis propiedades - Tarea 3 BD</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body class="dashboard-page">
-<header class="topbar">
-  <div>
-    <h1>Mis propiedades</h1>
-    <p>Vista de cliente – Sistema de facturación municipal</p>
-    <p id="cliente-username">Cliente:</p>
-  </div>
+  <div class="dashboard-inner">
 
-  <!-- El texto y la acción los controla JS -->
-  <button id="btnClienteHeader" class="btn-secondary"></button>
-</header>
+  <!-- Header igual al estilo del admin -->
+  <header class="dashboard-header">
+    <div class="dashboard-title">
+      <h1>Mis propiedades</h1>
+      <p>Vista de cliente – Sistema de facturación municipal</p>
+      <p id="cliente-username" class="user-chip">Cliente:</p>
+      <p id="cliente-impersonation" class="impersonation-label"></p>
+    </div>
 
+    <div class="top-actions">
+      <!-- El texto y la acción los controla JS (Cerrar sesión / Volver al panel admin) -->
+      <button id="btnClienteHeader" class="btn-outline"></button>
+    </div>
+  </header>
 
-  <main>
+  <!-- Contenido principal del dashboard de cliente -->
+  <main class="dashboard-main">
     <!-- Primer bloque: resumen -->
     <section class="dashboard-card">
       <div class="card-shell">
-        <div class="card-left">
-          <div>
-            <h2>Resumen de la cuenta</h2>
-            <p>
-              Aquí se muestra el resumen general de la cuenta del usuario
-              (total de propiedades y deuda total pendiente).
-            </p>
-          </div>
+        <div class="card-shell-left">
+          <h2>Resumen de la cuenta</h2>
+          <p>
+            Aquí se muestra el resumen general de la cuenta del usuario
+            (total de propiedades y deuda total pendiente).
+          </p>
         </div>
 
-        <div class="card-right">
+        <div class="card-shell-right">
+          <h3>Estado actual</h3>
           <p>
-            Más adelante acá puedes colocar totales traídos del backend
-            (cantidad de propiedades, monto total adeudado, etc.).
+            Propiedades asociadas:
+            <strong id="resumen-total-propiedades">—</strong>
+          </p>
+          <p>
+            Deuda total pendiente:
+            <strong id="resumen-deuda-total">—</strong>
+          </p>
+          <p class="resumen-hint">
+            Datos calculados a partir de las propiedades y facturas pendientes
+            del usuario.
           </p>
         </div>
       </div>
@@ -60,18 +74,88 @@
                 <th>Finca</th>
                 <th>Zona</th>
                 <th>Uso</th>
-                <th>Valor fiscal</th>
+                <th>Fecha Registro</th>
                 <th>Deuda total pendiente</th>
               </tr>
             </thead>
-            <tbody id="tabla-propiedades">
-              <!-- Ejemplo de fila estática de momento -->
+            <tbody id="tbody-propiedades">
+              <tr class="placeholder">
+                <td colspan="5">
+                  Aquí se cargarán las propiedades del usuario desde el backend.
+                  De momento los datos son de ejemplo.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tercer bloque: facturas pendientes -->
+    <section class="dashboard-card">
+      <div class="card-shell">
+        <div class="card-left">
+          <div>
+            <h2>Facturas pendientes</h2>
+            <p>
+              Listado de las facturas que aún no se han cancelado para este usuario.
+            </p>
+          </div>
+        </div>
+
+        <div class="card-right table-wrapper">
+          <table class="properties-table">
+            <thead>
               <tr>
-                <td>F-0007</td>
-                <td>Urbana</td>
-                <td>Residencial</td>
-                <td>₡50 000 000</td>
-                <td>₡0</td>
+                <th>N° factura</th>
+                <th>Periodo</th>
+                <th>Servicio</th>
+                <th>Monto</th>
+                <th>Vence</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-facturas-pendientes">
+              <tr class="placeholder">
+                <td colspan="7">
+                  Aquí se mostrarán las facturas pendientes del usuario.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cuarto bloque: historial de pagos -->
+    <section class="dashboard-card">
+      <div class="card-shell">
+        <div class="card-left">
+          <div>
+            <h2>Historial de pagos</h2>
+            <p>
+              Pagos registrados en el sistema para este usuario (incluyendo pagos web).
+            </p>
+          </div>
+        </div>
+
+        <div class="card-right table-wrapper">
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>N° factura</th>
+                <th>Detalle</th>
+                <th>Monto</th>
+                <th>Medio</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-historial-pagos">
+              <tr class="placeholder">
+                <td colspan="5">
+                  Aquí se mostrará el historial de pagos del usuario.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -79,6 +163,7 @@
       </div>
     </section>
   </main>
+  </div>
 
   <script src="script.js"></script>
 </body>

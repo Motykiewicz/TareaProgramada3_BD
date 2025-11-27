@@ -1,3 +1,9 @@
+-- base estructural del proyecto 
+-- se crean todas las tablas 
+-- persona, usuario, propiedades, medidores, movimientos, cc, facturas, pagos, aplicacion de pagos
+-- ordenes de recorte, parametro sistema, tablas de relacion indices 
+
+
 USE TP3_Municipalidad;
 GO
 
@@ -11,10 +17,7 @@ CREATE TABLE dbo.Persona (
     Telefono2 VARCHAR(20) NULL
 );
 GO
-ALTER TABLE dbo.Persona
-ADD Email      VARCHAR(100) NOT NULL DEFAULT 'sin-correo@ejemplo.org',
-    Telefono1  VARCHAR(20)  NOT NULL DEFAULT '0000-0000',
-    Telefono2  VARCHAR(20)  NULL;
+
 
 IF OBJECT_ID('dbo.Usuario','U') IS NOT NULL DROP TABLE dbo.Usuario;
 CREATE TABLE dbo.Usuario (
@@ -189,8 +192,8 @@ CREATE TABLE dbo.UsuarioPropiedad (
   );
 GO
 
-
-
+-- indices 
+-- solo una factura por propiedad y fecha 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='UX_Factura_Propiedad_Fecha' AND object_id = OBJECT_ID('dbo.Factura'))
 BEGIN
   CREATE UNIQUE INDEX UX_Factura_Propiedad_Fecha
@@ -200,16 +203,21 @@ GO
 
 
 
-
+-- buscar todas las facturas que se le aplico un pago 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_PagoFactura_Factura' AND object_id = OBJECT_ID('dbo.PagoFactura'))
   CREATE INDEX IX_PagoFactura_Factura ON dbo.PagoFactura(FacturaID);
 
+
+-- para buscar el numero de finca
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_Propiedad_Finca' AND object_id = OBJECT_ID('dbo.Propiedad'))
   CREATE INDEX IX_Propiedad_Finca ON dbo.Propiedad(Finca);
 
+-- solo haya una relacion entre propiedad y persona
 IF NOT EXISTS (SELECT 1 FROM sys.indexes  WHERE name='UX_PropiedadPersona_Abierta' AND object_id=OBJECT_ID('dbo.PropiedadPersona'))
   CREATE UNIQUE INDEX UX_PropiedadPersona_Abierta ON dbo.PropiedadPersona (PropiedadID, PersonaID) WHERE FechaFin IS NULL;
 
+
+-- para buscar las propiedades de una persona
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='IX_PropiedadPersona_Persona_Abierta' AND object_id=OBJECT_ID('dbo.PropiedadPersona'))
   CREATE INDEX IX_PropiedadPersona_Persona_Abierta ON dbo.PropiedadPersona(PersonaID) WHERE FechaFin IS NULL;
 

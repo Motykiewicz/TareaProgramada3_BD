@@ -24,15 +24,24 @@ body {
 
 .card-shell {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1200px;
   background: #f9fafb;
   border-radius: 24px;
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18);
-  overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(260px, 1.05fr) minmax(320px, 1.25fr);
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.6fr);
 }
 
+.card-shell-left {
+  padding: 24px 32px;      /* <-- más margen interno */
+  background: linear-gradient(135deg, #1e40af, #1d4ed8, #020617);
+  color: #ffffff;
+}
+
+.card-shell-right {
+  padding: 24px 32px;      /* <-- más margen interno */
+  background: #f9fafb;     /* blanco muy claro, como el resto */
+}
 /* Columna izquierda azul */
 .card-left {
   padding: 36px 40px;
@@ -213,6 +222,7 @@ body {
 
 .dashboard-card .card-shell {
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+  overflow: visible;
 }
 
 /* Ajustes cuando usamos card-shell dentro de dashboard-card */
@@ -235,6 +245,7 @@ body {
 
 .table-wrapper {
   padding-top: 8px;
+  overflow-x: auto;
 }
 
 .properties-table {
@@ -282,4 +293,74 @@ body {
     gap: 12px;
     align-items: flex-start;
   }
+}
+
+/* Filas de placeholder en tablas de cliente */
+.properties-table .placeholder td {
+  text-align: center;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.dashboard-main {
+  margin-top: 8px;  /* si lo querés más separado, probá 16px o 24px */
+} 
+
+.dashboard-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+ /* ===== Toasts (notificaciones flotantes) ===== */
+
+#toast-container {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 260px;
+  padding: 12px 18px;
+  margin-top: 8px;
+  border-radius: 999px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.9rem;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast-success {
+  background: #16a34a;
+}
+
+.toast-error {
+  background: #dc2626;
+}
+
+.toast-info {
+  background: #2563eb;
+}
+
+/* Etiqueta de "modo administrador" en vista cliente */
+
+.impersonation-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.resumen-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 6px;
 }

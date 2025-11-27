@@ -61,3 +61,5 @@ VALUES (
   HASHBYTES('SHA2_256', 'clave123')   -- contraseña en texto plano
 );
 
+---------------------------
+

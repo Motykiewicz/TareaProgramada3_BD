@@ -19,26 +19,68 @@
   </header>
 
   <main>
+    <!-- Tarjeta 1: resumen rápido -->
     <section class="dashboard-card">
       <div class="card-shell">
-        <!-- TITULOS EN LA PARTE AZUL -->
         <div class="card-left">
           <div>
             <h2>Resumen rápido</h2>
             <p>
-              Desde este panel el administrador puede:
+              Desde este panel el administrador puede revisar el estado general
+              del sistema municipal, consultar reportes y realizar pruebas de
+              facturación, pagos y morosidad.
             </p>
           </div>
         </div>
 
-        <!-- LISTA A LA DERECHA -->
         <div class="card-right">
+          <p>
+            Esta vista está pensada principalmente para pruebas de la tarea:
+          </p>
           <ul>
             <li>Ver información general del sistema.</li>
             <li>Impersonar a un usuario para ver su vista de cliente.</li>
             <li>Consultar reportes y pruebas que pide la tarea.</li>
             <li>Probar facturación, pagos y morosidad del sistema.</li>
           </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tarjeta 2: gestión de usuarios / impersonar -->
+    <section class="dashboard-card">
+      <div class="card-shell">
+        <div class="card-left">
+          <div>
+            <h2>Usuarios del sistema</h2>
+            <p>
+              Seleccione un usuario para ver el portal como si fuera ese cliente.
+              Esta funcionalidad se usa para probar la consulta web del cliente
+              sin necesidad de conocer su contraseña.
+            </p>
+          </div>
+        </div>
+
+        <div class="card-right table-wrapper">
+          <table class="properties-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-usuarios">
+              <!-- Fila de ejemplo por si todavía no hay backend -->
+              <tr class="placeholder">
+                <td colspan="4">
+                  Aquí se cargarán los usuarios desde el backend.
+                  De momento se muestra un ejemplo con <strong>user_f0007</strong>.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
