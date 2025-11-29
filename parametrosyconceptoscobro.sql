@@ -6,8 +6,7 @@ GO
 -- AGUA
 IF EXISTS (SELECT 1 FROM dbo.ConceptoCobro WHERE Codigo = 'AGUA')
     UPDATE dbo.ConceptoCobro
-       SET Descripcion = N'Consumo de agua',
-           EsFijo      = 0
+       SET Descripcion = N'Consumo de agua', EsFijo = 0
      WHERE Codigo = 'AGUA';
 ELSE
     INSERT INTO dbo.ConceptoCobro(Codigo, Descripcion, EsFijo)
@@ -16,8 +15,7 @@ ELSE
 -- IMPUESTO
 IF EXISTS (SELECT 1 FROM dbo.ConceptoCobro WHERE Codigo = 'IMPUESTO')
     UPDATE dbo.ConceptoCobro
-       SET Descripcion = N'Impuesto a la propiedad',
-           EsFijo      = 0
+       SET Descripcion = N'Impuesto a la propiedad', EsFijo  = 0
      WHERE Codigo = 'IMPUESTO';
 ELSE
     INSERT INTO dbo.ConceptoCobro(Codigo, Descripcion, EsFijo)
@@ -26,8 +24,7 @@ ELSE
 -- BASURA
 IF EXISTS (SELECT 1 FROM dbo.ConceptoCobro WHERE Codigo = 'BASURA')
     UPDATE dbo.ConceptoCobro
-       SET Descripcion = N'Recolección de basura',
-           EsFijo      = 0
+       SET Descripcion = N'Recolección de basura', EsFijo = 0
      WHERE Codigo = 'BASURA';
 ELSE
     INSERT INTO dbo.ConceptoCobro(Codigo, Descripcion, EsFijo)
@@ -36,8 +33,7 @@ ELSE
 -- PARQUES
 IF EXISTS (SELECT 1 FROM dbo.ConceptoCobro WHERE Codigo = 'PARQUES')
     UPDATE dbo.ConceptoCobro
-       SET Descripcion = N'Mantenimiento de parques',
-           EsFijo      = 0
+       SET Descripcion = N'Mantenimiento de parques', EsFijo = 0
      WHERE Codigo = 'PARQUES';
 ELSE
     INSERT INTO dbo.ConceptoCobro(Codigo, Descripcion, EsFijo)
@@ -46,8 +42,7 @@ ELSE
 -- RECONEXION
 IF EXISTS (SELECT 1 FROM dbo.ConceptoCobro WHERE Codigo = 'RECONEXION')
     UPDATE dbo.ConceptoCobro
-       SET Descripcion = N'Cargo por reconexión',
-           EsFijo      = 1
+       SET Descripcion = N'Cargo por reconexión', EsFijo = 1
      WHERE Codigo = 'RECONEXION';
 ELSE
     INSERT INTO dbo.ConceptoCobro(Codigo, Descripcion, EsFijo)
@@ -59,13 +54,12 @@ ELSE
 --    Ajustados al catálogo nuevo: Consumo de agua
 --    Valor mínimo = 5000, valor por m3 = 1000
 
-
 -- VALOR_M3  1000 colones por m3
 IF EXISTS (SELECT 1 FROM dbo.ParametroSistema WHERE Clave = 'VALOR_M3')
     UPDATE dbo.ParametroSistema
        SET ValorDecimal = CAST(1000.00 AS DECIMAL(14,4)),
-           ValorEntero  = NULL,
-           ValorTexto   = NULL
+           ValorEntero = NULL,
+           ValorTexto = NULL
      WHERE Clave = 'VALOR_M3';
 ELSE
     INSERT INTO dbo.ParametroSistema(Clave, ValorDecimal, ValorEntero, ValorTexto)
@@ -75,8 +69,8 @@ ELSE
 IF EXISTS (SELECT 1 FROM dbo.ParametroSistema WHERE Clave = 'MONTO_MINIMO_AGUA')
     UPDATE dbo.ParametroSistema
        SET ValorDecimal = CAST(5000.00 AS DECIMAL(14,4)),
-           ValorEntero  = NULL,
-           ValorTexto   = NULL
+           ValorEntero = NULL,
+           ValorTexto = NULL
      WHERE Clave = 'MONTO_MINIMO_AGUA';
 ELSE
     INSERT INTO dbo.ParametroSistema(Clave, ValorDecimal, ValorEntero, ValorTexto)
@@ -86,8 +80,8 @@ ELSE
 IF EXISTS (SELECT 1 FROM dbo.ParametroSistema WHERE Clave = 'DIAS_VENCIMIENTO')
     UPDATE dbo.ParametroSistema
        SET ValorDecimal = NULL,
-           ValorEntero  = 15,
-           ValorTexto   = NULL
+           ValorEntero = 15,
+           ValorTexto = NULL
      WHERE Clave = 'DIAS_VENCIMIENTO';
 ELSE
     INSERT INTO dbo.ParametroSistema(Clave, ValorDecimal, ValorEntero, ValorTexto)
@@ -97,8 +91,8 @@ ELSE
 IF EXISTS (SELECT 1 FROM dbo.ParametroSistema WHERE Clave = 'CARGO_RECONEXION')
     UPDATE dbo.ParametroSistema
        SET ValorDecimal = CAST(5000.00 AS DECIMAL(14,4)),
-           ValorEntero  = NULL,
-           ValorTexto   = NULL
+           ValorEntero = NULL,
+           ValorTexto = NULL
      WHERE Clave = 'CARGO_RECONEXION';
 ELSE
     INSERT INTO dbo.ParametroSistema(Clave, ValorDecimal, ValorEntero, ValorTexto)
@@ -109,3 +103,7 @@ ELSE
 -- 3. Verificación rápida
 SELECT * FROM dbo.ConceptoCobro ORDER BY Codigo;
 SELECT * FROM dbo.ParametroSistema ORDER BY Clave;
+
+
+
+

@@ -32,6 +32,5 @@ JOIN dbo.Propiedad p ON p.PropiedadID = f.PropiedadID
 WHERE p.Finca IN ('F-0007','F-0021','F-0048','F-0013','F-0034')
 ORDER BY p.Finca, f.FechaEmision;
 
-
-
+----------------------------------------
 

@@ -1,8 +1,8 @@
 const config = {
   user: 'tarea3_user',
-  password: 'TuPass_Tarea3_2025',
-  server: 'localhost',     // como lo teníamos
-  port: 1433,              // o el puerto que hayas puesto antess
+  password: '1234',
+  server: 'localhost',  
+  port: 1433,              
   database: 'TP3_Municipalidad',
   options: {
     encrypt: false,

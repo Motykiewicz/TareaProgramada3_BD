@@ -66,3 +66,6 @@ BEGIN
   JOIN deleted  d ON d.PropiedadID=i.PropiedadID;
 END
 GO
+
+
+

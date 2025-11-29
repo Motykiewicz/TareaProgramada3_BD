@@ -1,685 +1,777 @@
-console.log('script.js cargado ✅');
+// --------------------------------------------------------------
+// script.js COMPLETO — EXTENDIDO (Bitácora, Reportes, Pruebas,
+// Portal cliente e integración con combo de clientes)
+// --------------------------------------------------------------
+
+console.log('script.js cargado ');
 
 const BASE_URL = 'http://localhost:3000';
 const STORAGE_KEY = 't3bd_user';
 const IMPERSONATE_KEY = 't3bd_impersonated';
 
-// Se ejecuta en TODAS las páginas
+// =============================================================
+// OnLoad
+// =============================================================
 document.addEventListener('DOMContentLoaded', () => {
   initLogin();
   initAdminPage();
   initClientePage();
 });
 
-/* ==========================
-   Helpers de usuario / sesión
-   ========================== */
+/* =============================================================
+   HELPERS
+============================================================= */
 
-function getLoggedUser() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+function showToast(msg, type = 'info') {
+  // Sencillo por ahora; se puede cambiar por un toast bonito
+  alert(msg);
 }
 
-function setLoggedUser(user) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+function formatearFechaCorta(f) {
+  if (!f) return '';
+  const d = new Date(f);
+  if (isNaN(d)) return f;
+  return d.toISOString().substring(0, 10);
 }
 
-function clearLoggedUser() {
-  localStorage.removeItem(STORAGE_KEY);
-}
-
-function getImpersonatedUser() {
-  try {
-    const raw = localStorage.getItem(IMPERSONATE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-function setImpersonatedUser(user) {
-  if (!user) {
-    localStorage.removeItem(IMPERSONATE_KEY);
-  } else {
-    localStorage.setItem(IMPERSONATE_KEY, JSON.stringify(user));
-  }
-}
-
-function getQueryParams() {
-  return new URLSearchParams(window.location.search);
-}
-
-/* ==========================
-   Helpers visuales
-   ========================== */
-
-function showError(div, message) {
-  if (!div) return;
-  if (!message) {
-    div.style.display = 'none';
-    div.textContent = '';
-  } else {
-    div.style.display = 'block';
-    div.textContent = message;
-  }
-}
-
-function ensureToastContainer() {
-  let c = document.getElementById('toast-container');
-  if (!c) {
-    c = document.createElement('div');
-    c.id = 'toast-container';
-    document.body.appendChild(c);
-  }
-  return c;
-}
-
-function showToast(message, type = 'info') {
-  const container = ensureToastContainer();
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-
-  container.appendChild(toast);
-
-  // Animación de entrada
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-
-  // Desaparecer después de 3s
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-function formatearFechaCorta(fechaValor) {
-  if (!fechaValor) return '';
-  try {
-    const d = new Date(fechaValor);
-    if (Number.isNaN(d.getTime())) return String(fechaValor);
-    return d.toISOString().substring(0, 10); // yyyy-mm-dd
-  } catch {
-    return String(fechaValor);
-  }
-}
-
-/* ==========================
+/* =============================================================
    LOGIN
-   ========================== */
+============================================================= */
 
 function initLogin() {
   const form = document.getElementById('login-form');
-  if (!form) return; // No estamos en la página de login
+  if (!form) return;
 
-  const inputUser = document.getElementById('username');
-  const inputPass = document.getElementById('password');
-  const divError = document.getElementById('login-error');
+  form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!inputUser || !inputPass) return;
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value.trim();
 
-    const username = inputUser.value.trim();
-    const password = inputPass.value.trim();
+    if (!u || !p) return showToast('Ingrese usuario y contraseña', 'error');
 
-    if (!username || !password) {
-      const msg = 'Por favor ingrese usuario y contraseña.';
-      showError(divError, msg);
-      showToast(msg, 'error');
-      return;
-    }
+    const res = await fetch(`${BASE_URL}/api/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: u, password: p})
+    });
 
-    try {
-      const resp = await fetch(`${BASE_URL}/api/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
+    const data = await res.json();
 
-      const data = await resp.json().catch(() => null);
+    if (!data.ok) return showToast(data.msg || 'Error', 'error');
 
-      if (!resp.ok || !data || !data.ok) {
-        const msg =
-          (data && data.msg) || 'Usuario o contraseña incorrectos.';
-        showError(divError, msg);
-        showToast(msg, 'error');
-        return;
-      }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.user));
+    localStorage.removeItem(IMPERSONATE_KEY);
 
-      // Guardar usuario en localStorage
-      setLoggedUser(data.user);
-      // Limpiar impersonación anterior, por si acaso
-      setImpersonatedUser(null);
-
-      // Redirigir según rol
-      if (data.user.rol === 'admin') {
-        window.location.href = 'dashboard_admin.html';
-      } else {
-        window.location.href = 'dashboard_cliente.html';
-      }
-    } catch (err) {
-      console.error('Error en login:', err);
-      const msg =
-        'Ocurrió un error al iniciar sesión. Intente de nuevo.';
-      showError(divError, msg);
-      showToast(msg, 'error');
-    }
+    if (data.user.rol === 'admin') location.href = 'dashboard_admin.html';
+    else location.href = 'dashboard_cliente.html';
   });
 }
 
-/* ==========================
-   ADMIN
-   ========================== */
+/* =============================================================
+   ADMIN PAGE
+============================================================= */
 
 function initAdminPage() {
-  const adminUserLabel = document.getElementById('admin-username');
+  const lblAdmin = document.getElementById('admin-username');
+  if (!lblAdmin) return; // no estamos en dashboard_admin
+
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  if (!user || user.rol !== 'admin') return location.href = 'login.html';
+
+  lblAdmin.textContent = `Usuario administrador: ${user.login}`;
   const btnLogout = document.getElementById('btn-logout');
-
-  if (!adminUserLabel && !btnLogout) {
-    return; // No estamos en la página admin
-  }
-
-  const user = getLoggedUser();
-  if (!user || user.rol !== 'admin') {
-    // Si no hay admin logueado, mandamos al login
-    window.location.href = 'login.html';
-    return;
-  }
-
-  if (adminUserLabel) {
-    adminUserLabel.textContent = `Usuario administrador: ${user.login}`;
-  }
-
   if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      clearLoggedUser();
-      setImpersonatedUser(null);
-      window.location.href = 'login.html';
-    });
+    btnLogout.onclick = () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(IMPERSONATE_KEY);
+      location.href = 'login.html';
+    };
   }
 
-  // Cargar usuarios si existe la tabla
   loadAdminUsers();
+  initAdminSearch();
+  initBitacora();
+  initAdminTests();
+  initAdminReports();
 }
+
+/* =============================================================
+   ADMIN — USUARIOS
+============================================================= */
 
 async function loadAdminUsers() {
   const tbody = document.getElementById('tbody-usuarios');
   if (!tbody) return;
 
-  tbody.innerHTML = '<tr><td colspan="4">Cargando usuarios...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
 
   try {
-    const resp = await fetch(`${BASE_URL}/api/admin/usuarios`);
-    const data = await resp.json().catch(() => null);
+    const res = await fetch(`${BASE_URL}/api/admin/usuarios`);
+    const data = await res.json();
 
-    if (!resp.ok || !data || !data.ok || !Array.isArray(data.usuarios)) {
-      tbody.innerHTML =
-        '<tr><td colspan="4">No se pudieron obtener los usuarios.</td></tr>';
-      return;
-    }
-
-    if (data.usuarios.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="4">No hay usuarios en el sistema.</td></tr>';
+    if (!data.ok || !Array.isArray(data.usuarios)) {
+      tbody.innerHTML = '<tr><td colspan="4">Error cargando usuarios</td></tr>';
       return;
     }
 
     tbody.innerHTML = '';
 
-    data.usuarios.forEach((u) => {
+    data.usuarios.forEach(u => {
       const tr = document.createElement('tr');
 
-      const tdLogin = document.createElement('td');
-      tdLogin.textContent = u.login;
-
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = u.nombre || '';
-
-      const tdRol = document.createElement('td');
-      tdRol.textContent = u.rol;
-
-      const tdAccion = document.createElement('td');
-
-      // Botón "Ver como cliente"
-      const btn = document.createElement('button');
-      btn.className = 'btn-outline';
-      btn.textContent = 'Ver como cliente';
-      btn.dataset.usuarioId = u.usuarioId;
-      btn.dataset.login = u.login;
-      btn.dataset.nombre = u.nombre || '';
-      btn.dataset.rol = u.rol;
-
-      btn.addEventListener('click', () => {
-        const impersonated = {
-          usuarioId: u.usuarioId,
-          login: u.login,
-          nombre: u.nombre,
-          rol: u.rol
-        };
-        setImpersonatedUser(impersonated);
-        window.location.href = 'dashboard_cliente.html?from=admin';
-      });
-
-      tdAccion.appendChild(btn);
-
-      tr.appendChild(tdLogin);
-      tr.appendChild(tdNombre);
-      tr.appendChild(tdRol);
-      tr.appendChild(tdAccion);
+      tr.innerHTML = `
+        <td>${u.login}</td>
+        <td>${u.nombre || ''}</td>
+        <td>${u.rol}</td>
+        <td>
+          <button class="btn-outline btn-impersonar"
+                  data-id="${u.usuarioId}"
+                  data-login="${u.login}"
+                  data-nombre="${u.nombre}">
+            Ver como cliente
+          </button>
+        </td>
+      `;
 
       tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-impersonar').forEach(btn => {
+      btn.onclick = () => {
+        const imp = {
+          usuarioId: Number(btn.dataset.id),
+          login: btn.dataset.login,
+          nombre: btn.dataset.nombre,
+          rol: 'no-admin'
+        };
+        localStorage.setItem(IMPERSONATE_KEY, JSON.stringify(imp));
+        location.href = 'dashboard_cliente.html?from=admin';
+      };
     });
   } catch (err) {
     console.error('Error cargando usuarios admin:', err);
-    tbody.innerHTML =
-      '<tr><td colspan="4">Error al cargar los usuarios.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4">Error cargando usuarios</td></tr>';
   }
 }
 
-/* ==========================
-   CLIENTE
-   ========================== */
+/* =============================================================
+   ADMIN — BUSCAR CLIENTE + COMBO
+============================================================= */
+
+function initAdminSearch() {
+  const form    = document.getElementById('admin-search-form');
+  const tipo    = document.getElementById('admin-search-type');
+  const valor   = document.getElementById('admin-search-value');
+  const wrapper = document.getElementById('admin-search-table-wrapper');
+  const empty   = document.getElementById('admin-search-empty');
+  const tbody   = document.getElementById('tbody-admin-busqueda');
+
+  if (!form) return; // no estamos en dashboard_admin
+
+  // ==== NUEVO: combo de clientes ====
+  const combo = document.getElementById('admin-clientes-list');
+  if (combo) {
+    cargarComboClientes(combo, tipo, valor, form);
+  }
+  // ==================================
+
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+
+    empty.textContent = 'Buscando...';
+    wrapper.style.display = 'none';
+    tbody.innerHTML = '';
+
+    const params = new URLSearchParams();
+    params.append('tipo', tipo.value);
+    params.append('valor', valor.value.trim());
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/admin/buscar-cliente?${params}`);
+      const data = await res.json();
+
+      if (!data || data.length === 0) {
+        empty.textContent = 'No se encontraron resultados.';
+        return;
+      }
+
+      empty.textContent = '';
+      wrapper.style.display = 'block';
+      tbody.innerHTML = '';
+
+      data.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.UsuarioLogin || '-'}</td>
+          <td>${r.NombrePersona}</td>
+          <td>${r.Identificacion || '-'}</td>
+          <td>${r.Finca || '-'}</td>
+          <td>
+            ${
+              r.UsuarioID
+                ? `<button class="btn-chip btn-impersonar2"
+                           data-id="${r.UsuarioID}"
+                           data-login="${r.UsuarioLogin}"
+                           data-nombre="${r.NombrePersona}">
+                     Ver como cliente
+                   </button>`
+                : '<span style="font-size:0.8rem;color:#666;">Sin usuario</span>'
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.btn-impersonar2').forEach(btn => {
+        btn.onclick = () => {
+          const imp = {
+            usuarioId: Number(btn.dataset.id),
+            login: btn.dataset.login,
+            nombre: btn.dataset.nombre,
+            rol: 'no-admin'
+          };
+          localStorage.setItem(IMPERSONATE_KEY, JSON.stringify(imp));
+          location.href = 'dashboard_cliente.html?from=admin';
+        };
+      });
+    } catch (err) {
+      console.error('Error en búsqueda admin:', err);
+      empty.textContent = 'Error al buscar.';
+    }
+  };
+
+  // Botones de "Casos sugeridos"
+  document.querySelectorAll('.suggested-finca').forEach(b => {
+    b.onclick = () => {
+      tipo.value = 'finca';
+      valor.value = b.dataset.finca;
+      form.dispatchEvent(new Event('submit'));
+    };
+  });
+}
+
+// ==== NUEVO: función para llenar combo de clientes ====
+async function cargarComboClientes(combo, tipoSelect, valorInput, form) {
+  try {
+    combo.innerHTML = '<option value="">Cargando clientes...</option>';
+
+    const res = await fetch(`${BASE_URL}/api/admin/clientes-todos`);
+    const data = await res.json();
+
+    if (!data.ok || !data.clientes || data.clientes.length === 0) {
+      combo.innerHTML = '<option value="">Sin clientes para listar</option>';
+      return;
+    }
+
+    combo.innerHTML = '<option value="">-- Seleccione un cliente --</option>';
+
+    data.clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.finca || c.identificacion;
+      opt.dataset.identificacion = c.identificacion || '';
+      opt.dataset.finca = c.finca || '';
+      opt.textContent = `${c.finca || 'Sin finca'} – ${c.nombre}`;
+      combo.appendChild(opt);
+    });
+
+    combo.onchange = () => {
+      if (!combo.value) return;
+
+      const selected = combo.options[combo.selectedIndex];
+      const finca = selected.dataset.finca;
+      const ident = selected.dataset.identificacion;
+
+      if (finca) {
+        tipoSelect.value = 'finca';
+        valorInput.value = finca;
+      } else {
+        tipoSelect.value = 'identificacion';
+        valorInput.value = ident;
+      }
+
+      // dispara la búsqueda automáticamente
+      form.dispatchEvent(new Event('submit'));
+    };
+  } catch (err) {
+    console.error('Error al cargar combo de clientes:', err);
+    combo.innerHTML = '<option value="">Error al cargar clientes</option>';
+  }
+}
+
+/* =============================================================
+   ADMIN — BITÁCORA
+============================================================= */
+
+function initBitacora() {
+  const btn   = document.getElementById('btn-bitacora-filtrar');
+  const desde = document.getElementById('bitacora-desde');
+  const hasta = document.getElementById('bitacora-hasta');
+
+  // Rango real del xmlUltimo.xml (AJUSTAR SI EL XML CAMBIA)
+  const minDate = '2025-06-01';
+  const maxDate = '2025-11-28';
+
+  [desde, hasta].forEach(inp => {
+    if (inp) {
+      inp.min = minDate;
+      inp.max = maxDate;
+    }
+  });
+
+  if (btn) btn.onclick = loadBitacora;
+  loadBitacora();
+}
+
+async function loadBitacora() {
+  const tabla = document.getElementById('bitacora-tabla')?.value || '';
+  const desde = document.getElementById('bitacora-desde')?.value || '';
+  const hasta = document.getElementById('bitacora-hasta')?.value || '';
+
+  const tbody = document.getElementById('tbody-bitacora');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="7">Cargando...</td></tr>';
+
+  const params = new URLSearchParams();
+  if (tabla) params.append('tabla', tabla);
+  if (desde) params.append('desde', desde);
+  if (hasta) params.append('hasta', hasta);
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/admin/bitacora?${params}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">Sin datos</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatearFechaCorta(row.Fecha)}</td>
+        <td>${row.Tabla}</td>
+        <td>${row.PK}</td>
+        <td>${row.Usuario || '-'}</td>
+        <td>${row.IP || '-'}</td>
+        <td>${row.Accion}</td>
+        <td>
+          <button class="btn-chip btn-ver-detalle"
+                  data-antes='${row.JsonAntes || ''}'
+                  data-despues='${row.JsonDespues || ''}'>
+            Ver
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.querySelectorAll('.btn-ver-detalle').forEach(btn => {
+      btn.onclick = () => {
+        const modal = document.getElementById('modal-bitacora');
+        const pre   = document.getElementById('modal-bitacora-pre');
+        if (!modal || !pre) return;
+
+        modal.classList.remove('hidden');
+        pre.textContent =
+          'ANTES:\n' + (btn.dataset.antes || '-') +
+          '\n\nDESPUÉS:\n' + (btn.dataset.despues || '-');
+      };
+    });
+
+    const closeBtn = document.getElementById('close-modal-bitacora');
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        const modal = document.getElementById('modal-bitacora');
+        if (modal) modal.classList.add('hidden');
+      };
+    }
+  } catch (err) {
+    console.error('Error cargando bitácora:', err);
+    tbody.innerHTML = '<tr><td colspan="7">Error cargando bitácora</td></tr>';
+  }
+}
+
+/* =============================================================
+   ADMIN — PRUEBAS MASIVAS
+============================================================= */
+
+function initAdminTests() {
+  document.querySelectorAll('.admin-test-btn').forEach(btn => {
+    btn.onclick = () => runAdminTest(btn.dataset.action);
+  });
+}
+
+async function runAdminTest(action) {
+  const out = document.getElementById('admin-test-output');
+  if (!out) return;
+
+  out.textContent = 'Procesando...';
+
+  const map = {
+    facturar: 'facturar',
+    intereses: 'intereses',
+    pagos: 'pagos',
+    rango: 'rango'
+  };
+
+  const endpoint = map[action];
+  if (!endpoint) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/admin/test/${endpoint}`, { method: 'POST' });
+    const data = await res.json();
+
+    if (!data.ok) out.textContent = data.msg || 'Error';
+    else out.textContent = data.msg || 'Proceso completado';
+  } catch (err) {
+    console.error('Error ejecutando prueba admin:', err);
+    out.textContent = 'Error ejecutando el proceso';
+  }
+}
+
+/* =============================================================
+   ADMIN — REPORTES
+============================================================= */
+
+function initAdminReports() {
+  const btn = document.getElementById('btn-report');
+  if (!btn) return;
+
+  btn.onclick = loadReport;
+}
+
+async function loadReport() {
+  const tipo  = document.getElementById('report-type')?.value;
+  const thead = document.getElementById('thead-report');
+  const tbody = document.getElementById('tbody-report');
+
+  if (!thead || !tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="10">Cargando...</td></tr>';
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/admin/report?tipo=${encodeURIComponent(tipo)}`);
+    const data = await res.json();
+
+    if (!data || !data.columns || !data.rows) {
+      tbody.innerHTML = '<tr><td colspan="10">Error generando reporte</td></tr>';
+      return;
+    }
+
+    thead.innerHTML = '<tr>' + data.columns.map(c => `<th>${c}</th>`).join('') + '</tr>';
+    tbody.innerHTML = '';
+
+    data.rows.forEach(r => {
+      const tr = document.createElement('tr');
+      let rowHtml = '';
+      data.columns.forEach(c => {
+        rowHtml += `<td>${r[c]}</td>`;
+      });
+      tr.innerHTML = rowHtml;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('Error cargando reporte:', err);
+    tbody.innerHTML = '<tr><td colspan="10">Error cargando reporte</td></tr>';
+  }
+}
+
+/* =============================================================
+   CLIENTE – PORTAL DE USUARIO
+   (carga de propiedades, facturas y pagos)
+============================================================= */
 
 function initClientePage() {
-  const labelCliente = document.getElementById('cliente-username');
-  const labelImpersonation = document.getElementById('cliente-impersonation');
-  const btnHeader = document.getElementById('btnClienteHeader');
+  const lblUser         = document.getElementById('cliente-username');
+  const lblImpersonation= document.getElementById('cliente-impersonation');
+  const btnHeader       = document.getElementById('btnClienteHeader');
 
-  if (!labelCliente && !btnHeader) {
-    return; // No estamos en la página de cliente
-  }
-
-  const params = getQueryParams();
-  const fromAdmin = params.get('from') === 'admin';
-
-  const loggedUser = getLoggedUser();
-  const impersonatedUser = getImpersonatedUser();
-
-  let effectiveUser = null;
-
-  if (fromAdmin && impersonatedUser && impersonatedUser.usuarioId) {
-    effectiveUser = impersonatedUser;
-  } else {
-    effectiveUser = loggedUser;
-  }
-
-  if (!effectiveUser) {
-    window.location.href = 'login.html';
+  if (!lblUser || !btnHeader) {
+    // No estamos en dashboard_cliente.html
     return;
   }
 
-  // Mostrar quién es el cliente
-  if (labelCliente) {
-    const nombreMostrar =
-      effectiveUser.nombre && effectiveUser.nombre.trim().length > 0
-        ? effectiveUser.nombre
-        : effectiveUser.login;
-    labelCliente.textContent = `Cliente: ${nombreMostrar}`;
+  // Usuario real y usuario "impersonado"
+  const storedUser       = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  const impersonatedUser = JSON.parse(localStorage.getItem(IMPERSONATE_KEY) || 'null');
+
+  if (!storedUser && !impersonatedUser) {
+    location.href = 'login.html';
+    return;
   }
 
-  // Etiqueta de "modo administrador"
-  if (labelImpersonation) {
-    if (
-      fromAdmin &&
-      impersonatedUser &&
-      loggedUser &&
-      loggedUser.rol === 'admin'
-    ) {
-      labelImpersonation.textContent = `Modo administrador: viendo como ${effectiveUser.login}`;
-      labelImpersonation.style.display = 'block';
-    } else {
-      labelImpersonation.textContent = '';
-      labelImpersonation.style.display = 'none';
+  const effectiveUser = impersonatedUser || storedUser;
+
+  let label = `Cliente: ${effectiveUser.login}`;
+  if (effectiveUser.nombre) {
+    label += ` – ${effectiveUser.nombre}`;
+  }
+  lblUser.textContent = label;
+
+  if (impersonatedUser) {
+    if (lblImpersonation) {
+      lblImpersonation.style.display = 'block';
+      lblImpersonation.textContent =
+        `Viendo como ${impersonatedUser.login} (desde admin)`;
     }
-  }
 
-  // Configurar botón de cabecera
-  if (btnHeader) {
-    if (fromAdmin) {
-      btnHeader.textContent = '← Volver al panel administrador';
-      btnHeader.addEventListener('click', () => {
-        window.location.href = 'dashboard_admin.html';
-      });
-    } else {
-      btnHeader.textContent = 'Cerrar sesión';
-      btnHeader.addEventListener('click', () => {
-        clearLoggedUser();
-        setImpersonatedUser(null);
-        window.location.href = 'login.html';
-      });
+    btnHeader.textContent = 'Volver al admin';
+    btnHeader.onclick = () => {
+      localStorage.removeItem(IMPERSONATE_KEY);
+      location.href = 'dashboard_admin.html';
+    };
+  } else {
+    if (lblImpersonation) {
+      lblImpersonation.style.display = 'none';
+      lblImpersonation.textContent = '';
     }
+
+    btnHeader.textContent = 'Cerrar sesión';
+    btnHeader.onclick = () => {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(IMPERSONATE_KEY);
+      location.href = 'login.html';
+    };
   }
 
-  // Cargar propiedades, facturas y pagos para el usuario efectivo
-  loadClientePropiedades(effectiveUser.usuarioId);
-  loadClienteFacturas(effectiveUser.usuarioId);
-  loadClientePagos(effectiveUser.usuarioId);
-
-  // Delegación de eventos para botones "Pagar"
-  const tbodyFacturas = document.getElementById('tbody-facturas-pendientes');
-  if (tbodyFacturas) {
-    tbodyFacturas.addEventListener('click', (ev) => {
-      const target = ev.target;
-      if (target && target.matches('button.btn-pay')) {
-        const facturaId = target.dataset.facturaId;
-        if (facturaId) {
-          hacerPagoFactura(effectiveUser.usuarioId, facturaId, target);
-        }
-      }
-    });
+  const uid = Number(effectiveUser.usuarioId || effectiveUser.UsuarioID || 0);
+  if (!uid) {
+    console.error('No se pudo determinar el UsuarioID para el cliente', effectiveUser);
+    return;
   }
+
+  loadClientPropiedades(uid);
+  loadClientFacturas(uid);
+  loadClientPagos(uid);
 }
 
-/* ==========================
-   Propiedades del cliente
-   ========================== */
+/* -------------------------------------------------------------
+   CLIENTE – PROPIEDADES + RESUMEN
+------------------------------------------------------------- */
 
-async function loadClientePropiedades(usuarioId) {
-  const tbody = document.getElementById('tbody-propiedades');
+async function loadClientPropiedades(usuarioId) {
+  const resumenTotalProp  = document.getElementById('resumen-total-propiedades');
+  const resumenDeudaTotal = document.getElementById('resumen-deuda-total');
+  const tbody             = document.getElementById('tbody-propiedades');
+
   if (!tbody) return;
 
-  tbody.innerHTML =
-    '<tr><td colspan="5">Cargando propiedades...</td></tr>';
-
-  // Referencias a las etiquetas del resumen
-  const lblTotalProps = document.getElementById('resumen-total-propiedades');
-  const lblDeudaTotal = document.getElementById('resumen-deuda-total');
+  tbody.innerHTML = '<tr><td colspan="5">Cargando propiedades...</td></tr>';
 
   try {
-    const resp = await fetch(
-      `${BASE_URL}/api/client/propiedades?usuarioId=${encodeURIComponent(
-        usuarioId
-      )}`
-    );
-    const data = await resp.json().catch(() => null);
+    const url = `${BASE_URL}/api/client/propiedades?usuarioId=${encodeURIComponent(usuarioId)}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    // Si hubo error en la respuesta
-    if (!resp.ok || !data || !data.ok || !Array.isArray(data.propiedades)) {
-      tbody.innerHTML =
-        '<tr><td colspan="5">No se pudieron obtener las propiedades.</td></tr>';
-
-      if (lblTotalProps) lblTotalProps.textContent = '0';
-      if (lblDeudaTotal) lblDeudaTotal.textContent = '₡0';
+    if (!data.ok) {
+      console.error('Error desde API propiedades:', data);
+      tbody.innerHTML = '<tr><td colspan="5">Error cargando propiedades.</td></tr>';
+      if (resumenTotalProp) resumenTotalProp.textContent = '—';
+      if (resumenDeudaTotal) resumenDeudaTotal.textContent = '—';
       return;
     }
 
-    // Si no tiene propiedades
-    if (data.propiedades.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="5">Este usuario no tiene propiedades asociadas.</td></tr>';
+    const props = data.propiedades || [];
 
-      if (lblTotalProps) lblTotalProps.textContent = '0';
-      if (lblDeudaTotal) lblDeudaTotal.textContent = '₡0';
+    if (props.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">No hay propiedades asociadas.</td></tr>';
+      if (resumenTotalProp) resumenTotalProp.textContent = '0';
+      if (resumenDeudaTotal) resumenDeudaTotal.textContent = '₡0';
       return;
     }
 
-    // Aquí ya SÍ hay propiedades
     tbody.innerHTML = '';
-
-    let totalPropiedades = data.propiedades.length;
     let totalDeuda = 0;
 
-    data.propiedades.forEach((p) => {
-      // asegurar que la deuda sea número
-      let deuda = Number(p.deudaPendiente ?? p.deuda_total ?? 0);
-      if (Number.isNaN(deuda)) deuda = 0;
+    props.forEach(p => {
+      const deuda = Number(p.deudaPendiente || p.DeudaPendiente || 0);
       totalDeuda += deuda;
 
       const tr = document.createElement('tr');
-
-      const tdFinca = document.createElement('td');
-      tdFinca.textContent = p.finca;
-
-      const tdZona = document.createElement('td');
-      tdZona.textContent = p.zona || '—';
-
-      const tdUso = document.createElement('td');
-      tdUso.textContent = p.uso || '—';
-
-      const tdFecha = document.createElement('td');
-      tdFecha.textContent = formatearFechaCorta(p.fechaRegistro);
-
-      const tdDeuda = document.createElement('td');
-      tdDeuda.textContent = `₡${deuda.toLocaleString('es-CR')}`;
-
-      tr.appendChild(tdFinca);
-      tr.appendChild(tdZona);
-      tr.appendChild(tdUso);
-      tr.appendChild(tdFecha);
-      tr.appendChild(tdDeuda);
-
+      tr.innerHTML = `
+        <td>${p.finca || p.Finca}</td>
+        <td>${p.zona || p.Zona || '-'}</td>
+        <td>${p.uso || p.Uso || '-'}</td>
+        <td>${formatearFechaCorta(p.fechaRegistro || p.FechaRegistro)}</td>
+        <td>₡${deuda.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</td>
+      `;
       tbody.appendChild(tr);
     });
 
-    // Actualizar el resumen arriba
-    if (lblTotalProps) {
-      lblTotalProps.textContent = String(totalPropiedades);
+    if (resumenTotalProp) resumenTotalProp.textContent = String(props.length);
+    if (resumenDeudaTotal) {
+      resumenDeudaTotal.textContent = `₡${totalDeuda.toLocaleString('es-CR', {
+        minimumFractionDigits: 2
+      })}`;
     }
-    if (lblDeudaTotal) {
-      lblDeudaTotal.textContent = `₡${totalDeuda.toLocaleString('es-CR')}`;
-    }
-  } catch (err) {
-    console.error('Error cargando propiedades cliente:', err);
-    tbody.innerHTML =
-      '<tr><td colspan="5">Error al cargar las propiedades.</td></tr>';
 
-    if (lblTotalProps) lblTotalProps.textContent = '0';
-    if (lblDeudaTotal) lblDeudaTotal.textContent = '₡0';
+  } catch (err) {
+    console.error('Error JS al cargar propiedades:', err);
+    tbody.innerHTML = '<tr><td colspan="5">Error cargando propiedades.</td></tr>';
+    if (resumenTotalProp) resumenTotalProp.textContent = '—';
+    if (resumenDeudaTotal) resumenDeudaTotal.textContent = '—';
   }
 }
 
+/* -------------------------------------------------------------
+   CLIENTE – FACTURAS PENDIENTES
+------------------------------------------------------------- */
 
-/* ==========================
-   Facturas del cliente
-   ========================== */
-
-async function loadClienteFacturas(usuarioId) {
+async function loadClientFacturas(usuarioId) {
   const tbody = document.getElementById('tbody-facturas-pendientes');
   if (!tbody) return;
 
-  tbody.innerHTML =
-    '<tr><td colspan="7">Cargando facturas pendientes...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7">Cargando facturas...</td></tr>';
 
   try {
-    const resp = await fetch(
-      `${BASE_URL}/api/client/facturas?usuarioId=${encodeURIComponent(
-        usuarioId
-      )}`
-    );
-    const data = await resp.json().catch(() => null);
+    const url = `${BASE_URL}/api/client/facturas?usuarioId=${encodeURIComponent(usuarioId)}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    if (!resp.ok || !data || !data.ok || !Array.isArray(data.facturas)) {
-      tbody.innerHTML =
-        '<tr><td colspan="7">No se pudieron obtener las facturas.</td></tr>';
+    if (!data.ok) {
+      console.error('Error desde API facturas:', data);
+      tbody.innerHTML = '<tr><td colspan="7">Error cargando facturas.</td></tr>';
       return;
     }
 
-    if (data.facturas.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="7">No hay facturas pendientes para este usuario (todo al día).</td></tr>';
+    const facturas = data.facturas || [];
+
+    if (facturas.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7">No hay facturas pendientes.</td></tr>';
       return;
     }
 
     tbody.innerHTML = '';
 
-    data.facturas.forEach((f) => {
+    facturas.forEach(f => {
+      const monto = Number(f.montoColones || f.Total || 0);
+
       const tr = document.createElement('tr');
-
-      const tdNum = document.createElement('td');
-      tdNum.textContent = f.facturaId ?? f.numero;
-
-      const tdPeriodo = document.createElement('td');
-      tdPeriodo.textContent = f.periodoTexto || '—';
-
-      const tdServicio = document.createElement('td');
-      tdServicio.textContent = f.servicio || 'Servicios municipales';
-
-      const tdMonto = document.createElement('td');
-      tdMonto.textContent = `₡${Number(f.montoColones || 0).toLocaleString(
-        'es-CR'
-      )}`;
-
-      const tdVence = document.createElement('td');
-      tdVence.textContent = formatearFechaCorta(f.fechaVencimiento);
-
-      const tdEstado = document.createElement('td');
-      tdEstado.textContent = f.estado || 'PENDIENTE';
-
-      const tdAccion = document.createElement('td');
-
-      const btnPagar = document.createElement('button');
-      btnPagar.className = 'btn-primary btn-pay';
-      btnPagar.textContent = 'Pagar';
-      btnPagar.dataset.facturaId = f.facturaId;
-
-      tdAccion.appendChild(btnPagar);
-
-      tr.appendChild(tdNum);
-      tr.appendChild(tdPeriodo);
-      tr.appendChild(tdServicio);
-      tr.appendChild(tdMonto);
-      tr.appendChild(tdVence);
-      tr.appendChild(tdEstado);
-      tr.appendChild(tdAccion);
-
+      tr.innerHTML = `
+        <td>${f.numero || f.facturaId || f.FacturaID}</td>
+        <td>${f.periodoTexto || f.PeriodoTexto || '-'}</td>
+        <td>${f.servicio || f.Servicio || 'Servicios municipales'}</td>
+        <td>₡${monto.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</td>
+        <td>${formatearFechaCorta(f.fechaVencimiento || f.FechaVencimiento)}</td>
+        <td>${f.estado || f.Estado}</td>
+        <td>
+          <button class="btn-chip btn-pagar-factura"
+                  data-id="${f.facturaId || f.FacturaID}"
+                  data-monto="${monto}">
+            Pagar
+          </button>
+        </td>
+      `;
       tbody.appendChild(tr);
     });
+
+    tbody.querySelectorAll('.btn-pagar-factura').forEach(btn => {
+      btn.onclick = async () => {
+        const facturaId = Number(btn.dataset.id);
+        const monto = Number(btn.dataset.monto || 0);
+
+        const ok = confirm(
+          `¿Desea pagar la factura ${facturaId} por ₡${monto.toLocaleString('es-CR', {
+            minimumFractionDigits: 2
+          })}?`
+        );
+        if (!ok) return;
+
+        await pagarFacturaDesdeCliente(usuarioId, facturaId);
+        await loadClientPropiedades(usuarioId);
+        await loadClientFacturas(usuarioId);
+        await loadClientPagos(usuarioId);
+      };
+    });
+
   } catch (err) {
-    console.error('Error cargando facturas cliente:', err);
-    tbody.innerHTML =
-      '<tr><td colspan="7">Error al cargar facturas pendientes.</td></tr>';
+    console.error('Error JS al cargar facturas:', err);
+    tbody.innerHTML = '<tr><td colspan="7">Error cargando facturas.</td></tr>';
   }
 }
 
-/* ==========================
-   Pagos del cliente
-   ========================== */
+/* -------------------------------------------------------------
+   CLIENTE – PAGOS (HISTORIAL)
+------------------------------------------------------------- */
 
-async function loadClientePagos(usuarioId) {
+async function loadClientPagos(usuarioId) {
   const tbody = document.getElementById('tbody-historial-pagos');
   if (!tbody) return;
 
-  tbody.innerHTML =
-    '<tr><td colspan="5">Cargando historial de pagos...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5">Cargando pagos...</td></tr>';
 
   try {
-    const resp = await fetch(
-      `${BASE_URL}/api/client/pagos?usuarioId=${encodeURIComponent(
-        usuarioId
-      )}`
-    );
-    const data = await resp.json().catch(() => null);
+    const url = `${BASE_URL}/api/client/pagos?usuarioId=${encodeURIComponent(usuarioId)}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    if (!resp.ok || !data || !data.ok || !Array.isArray(data.pagos)) {
-      tbody.innerHTML =
-        '<tr><td colspan="5">No se pudo obtener el historial de pagos.</td></tr>';
+    if (!data.ok) {
+      console.error('Error desde API pagos:', data);
+      tbody.innerHTML = '<tr><td colspan="5">Error cargando pagos.</td></tr>';
       return;
     }
 
-    if (data.pagos.length === 0) {
-      tbody.innerHTML =
-        '<tr><td colspan="5">Este usuario aún no tiene pagos registrados.</td></tr>';
+    const pagos = data.pagos || [];
+
+    if (pagos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5">No hay pagos registrados.</td></tr>';
       return;
     }
 
     tbody.innerHTML = '';
 
-    data.pagos.forEach((p) => {
+    pagos.forEach(p => {
+      const monto = Number(p.montoColones || p.Monto || 0);
+
       const tr = document.createElement('tr');
-
-      const tdFecha = document.createElement('td');
-      tdFecha.textContent = formatearFechaCorta(p.fecha);
-
-      const tdFactura = document.createElement('td');
-      tdFactura.textContent = p.facturaId;
-
-      const tdDetalle = document.createElement('td');
-      tdDetalle.textContent = p.detalle || '';
-
-      const tdMonto = document.createElement('td');
-      tdMonto.textContent = `₡${Number(p.montoColones || 0).toLocaleString(
-        'es-CR'
-      )}`;
-
-      const tdMedio = document.createElement('td');
-      tdMedio.textContent = p.medio || '';
-
-      tr.appendChild(tdFecha);
-      tr.appendChild(tdFactura);
-      tr.appendChild(tdDetalle);
-      tr.appendChild(tdMonto);
-      tr.appendChild(tdMedio);
-
+      tr.innerHTML = `
+        <td>${formatearFechaCorta(p.fecha || p.Fecha)}</td>
+        <td>${p.facturaId || p.FacturaID}</td>
+        <td>${p.detalle || p.Referencia || '-'}</td>
+        <td>₡${monto.toLocaleString('es-CR', { minimumFractionDigits: 2 })}</td>
+        <td>${p.medio || p.Medio}</td>
+      `;
       tbody.appendChild(tr);
     });
+
   } catch (err) {
-    console.error('Error cargando pagos cliente:', err);
-    tbody.innerHTML =
-      '<tr><td colspan="5">Error al cargar el historial de pagos.</td></tr>';
+    console.error('Error JS al cargar pagos:', err);
+    tbody.innerHTML = '<tr><td colspan="5">Error cargando pagos.</td></tr>';
   }
 }
 
-/* ==========================
-   Pago desde la vista cliente
-   ========================== */
+/* -------------------------------------------------------------
+   CLIENTE – PAGO WEB (POST /api/client/pagar)
+------------------------------------------------------------- */
 
-async function hacerPagoFactura(usuarioId, facturaId, btn) {
-  const confirmar = window.confirm(
-    `¿Desea pagar la factura ${facturaId} ahora?`
-  );
-  if (!confirmar) return;
-
-  let originalText = '';
-  if (btn) {
-    originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = 'Procesando...';
-  }
-
+async function pagarFacturaDesdeCliente(usuarioId, facturaId) {
   try {
-    const referencia = `PAGO_PORTAL_WEB_${Date.now()}`;
-
-    const resp = await fetch(`${BASE_URL}/api/client/pagar`, {
+    const res = await fetch(`${BASE_URL}/api/client/pagar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         usuarioId,
         facturaId,
         medio: 'WEB',
-        referencia
+        referencia: `PAGO_WEB_${facturaId}`
       })
     });
 
-    const data = await resp.json().catch(() => null);
+    const data = await res.json();
 
-    if (!resp.ok || !data || !data.ok) {
-      const msg =
-        (data && data.msg) ||
-        'No se pudo procesar el pago. Verifique la información.';
-      showToast(msg, 'error');
+    if (!data.ok) {
+      console.error('Error al pagar factura:', data);
+      showToast(data.msg || 'Error al procesar el pago', 'error');
       return;
     }
 
     showToast('Pago realizado correctamente.', 'success');
-
-    // Recargar facturas y pagos
-    loadClienteFacturas(usuarioId);
-    loadClientePagos(usuarioId);
   } catch (err) {
-    console.error('Error al pagar factura:', err);
-    showToast('Ocurrió un error al procesar el pago.', 'error');
-  } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = originalText || 'Pagar';
-    }
+    console.error('Error JS al procesar pago:', err);
+    showToast('Error al procesar el pago.', 'error');
   }
 }

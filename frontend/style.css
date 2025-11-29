@@ -30,19 +30,28 @@ body {
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18);
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.6fr);
+  overflow: hidden;
 }
 
+/* Columna izquierda para dashboards / login */
 .card-shell-left {
-  padding: 24px 32px;      /* <-- más margen interno */
-  background: linear-gradient(135deg, #1e40af, #1d4ed8, #020617);
+  padding: 24px 32px;
+  background: #111827;
   color: #ffffff;
 }
 
-.card-shell-right {
-  padding: 24px 32px;      /* <-- más margen interno */
-  background: #f9fafb;     /* blanco muy claro, como el resto */
+/* Versión con degradado azul (se usa con class="card-shell-left gradient-card") */
+.gradient-card {
+  background: radial-gradient(circle at 0 0, #60a5fa, #2563eb 40%, #020617 100%);
 }
-/* Columna izquierda azul */
+
+.card-shell-right {
+  padding: 24px 32px;
+  background: #f9fafb;
+}
+
+/* ---------- VERSIONES CARD IZQ/DER PARA LOGIN (login.html) ---------- */
+
 .card-left {
   padding: 36px 40px;
   background: radial-gradient(circle at 0 0, #60a5fa, #2563eb 45%, #0f172a 92%);
@@ -75,7 +84,6 @@ body {
   opacity: 0.85;
 }
 
-/* Columna derecha (contenido) */
 .card-right {
   padding: 40px 56px;
   display: flex;
@@ -108,7 +116,8 @@ body {
   color: #111827;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 999px;
@@ -118,15 +127,18 @@ body {
   background: #f9fafb;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
   background: #ffffff;
 }
 
 .btn-primary {
-  width: 100%;
-  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 11px 16px;
   border: none;
   border-radius: 999px;
@@ -142,6 +154,13 @@ body {
 .btn-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 16px 30px rgba(37, 99, 235, 0.55);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .error {
@@ -215,6 +234,15 @@ body {
   color: #111827;
 }
 
+.dashboard-main {
+  margin-top: 8px;
+}
+
+.dashboard-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 /* Card de dashboard reusando el layout de 2 columnas */
 .dashboard-card {
   margin-bottom: 24px;
@@ -222,26 +250,127 @@ body {
 
 .dashboard-card .card-shell {
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
-  overflow: visible;
+  overflow: hidden;
 }
 
-/* Ajustes cuando usamos card-shell dentro de dashboard-card */
-.dashboard-card .card-left {
-  padding: 32px 36px;
+.dashboard-card .card-shell-left {
+  padding: 28px 32px;
 }
 
-.dashboard-card .card-right {
-  padding: 32px 40px;
+.dashboard-card .card-shell-right {
+  padding: 28px 32px;
 }
 
-.dashboard-card .card-right ul {
+.dashboard-card .card-shell-left h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.dashboard-card .card-shell-left p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.dashboard-card .card-shell-right ul {
   padding-left: 20px;
   line-height: 1.7;
   font-size: 14px;
   color: #374151;
 }
 
-/* ---------- TABLA DE PROPIEDADES (CLIENTE) ---------- */
+/* ---------- FORMULARIOS ADMIN (buscar cliente, filtros, etc.) ---------- */
+
+.admin-search-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.form-actions .btn-primary {
+  width: 100%;
+}
+
+/* Filtros bitácora (entidad + rango de fechas + botón) */
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-group-inline {
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Texto vacío / mensajes en secciones admin */
+#admin-search-empty {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* ---------- SECCIÓN CASOS SUGERIDOS (chips) ---------- */
+
+.cases-section {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.cases-section h3 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.cases-section p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+/* Puedes usar .chip-row o .chips-row, soportamos ambos */
+.chip-row,
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.chip-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.btn-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 4px 10px;
+  background: #ffffff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.05s;
+}
+
+.btn-chip:hover {
+  background: #edf3ff;
+  box-shadow: 0 2px 6px rgba(15, 35, 95, 0.15);
+}
+
+.btn-chip:active {
+  transform: translateY(1px);
+}
+
+/* ---------- TABLAS (propiedades, facturas, bitácora, pagos) ---------- */
 
 .table-wrapper {
   padding-top: 8px;
@@ -252,12 +381,16 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .properties-table th,
 .properties-table td {
   padding: 8px 10px;
   text-align: left;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .properties-table thead {
@@ -265,53 +398,67 @@ body {
 }
 
 .properties-table tbody tr:nth-child(even) {
-  background: #f3f4f6;
+  background: #f9fafb;
 }
 
-/* ---------- Responsivo ---------- */
-
-@media (max-width: 900px) {
-  .page,
-  .dashboard-page {
-    padding: 16px;
-  }
-
-  .card-shell {
-    grid-template-columns: 1fr;
-  }
-
-  .card-left {
-    border-radius: 24px 24px 0 0;
-  }
-
-  .card-right {
-    padding: 24px 20px;
-  }
-
-  .dashboard-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
+.properties-table tbody tr:hover {
+  background: #e5f0ff;
 }
 
-/* Filas de placeholder en tablas de cliente */
+.properties-table th {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+}
+
 .properties-table .placeholder td {
   text-align: center;
   font-style: italic;
   color: #6b7280;
 }
 
-.dashboard-main {
-  margin-top: 8px;  /* si lo querés más separado, probá 16px o 24px */
-} 
+/* ---------- Vista cliente: resúmenes --------- */
 
-.dashboard-inner {
-  max-width: 1200px;
-  margin: 0 auto;
+.resumen-hint {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 6px;
 }
 
- /* ===== Toasts (notificaciones flotantes) ===== */
+.impersonation-label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Ejemplo de resumen en tarjetas (si lo usas en dashboard_cliente.html) */
+.client-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.client-summary-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.client-summary-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.client-summary-value {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ---------- Toasts (notificaciones flotantes) ---------- */
 
 #toast-container {
   position: fixed;
@@ -351,16 +498,67 @@ body {
   background: #2563eb;
 }
 
-/* Etiqueta de "modo administrador" en vista cliente */
+/* ---------- Responsivo ---------- */
 
-.impersonation-label {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-top: 4px;
+@media (max-width: 900px) {
+  .page,
+  .dashboard-page {
+    padding: 16px;
+  }
+
+  .card-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .card-left,
+  .card-shell-left {
+    border-radius: 24px 24px 0 0;
+  }
+
+  .card-right,
+  .card-shell-right {
+    padding: 24px 20px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .admin-search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .client-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.resumen-hint {
-  font-size: 0.82rem;
-  color: #64748b;
-  margin-top: 6px;
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
 }
+
+.modal.hidden { display: none; }
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 500px;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.small { font-size: 0.9rem; }
+.mt-2 { margin-top: 10px; }

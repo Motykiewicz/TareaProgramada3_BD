@@ -6,24 +6,25 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="dashboard-page">
-  <header class="dashboard-header">
-    <div class="dashboard-title">
-      <h1>Panel administrador</h1>
-      <p>Tarea 3 – Sistema de facturación municipal</p>
-      <p class="user-chip" id="admin-username">Usuario administrador</p>
-    </div>
+  <div class="dashboard-inner">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="dashboard-title">
+        <h1>Panel administrador</h1>
+        <p>Tarea 3 – Sistema de facturación municipal</p>
+        <p class="user-chip" id="admin-username">Usuario administrador</p>
+      </div>
 
-    <div class="top-actions">
-      <button id="btn-logout" class="btn-outline">Cerrar sesión</button>
-    </div>
-  </header>
+      <div class="top-actions">
+        <button id="btn-logout" class="btn-outline">Cerrar sesión</button>
+      </div>
+    </header>
 
-  <main>
-    <!-- Tarjeta 1: resumen rápido -->
-    <section class="dashboard-card">
-      <div class="card-shell">
-        <div class="card-left">
-          <div>
+    <main class="dashboard-main">
+      <!-- Resumen -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
             <h2>Resumen rápido</h2>
             <p>
               Desde este panel el administrador puede revisar el estado general
@@ -31,60 +32,255 @@
               facturación, pagos y morosidad.
             </p>
           </div>
-        </div>
 
-        <div class="card-right">
-          <p>
-            Esta vista está pensada principalmente para pruebas de la tarea:
-          </p>
-          <ul>
-            <li>Ver información general del sistema.</li>
-            <li>Impersonar a un usuario para ver su vista de cliente.</li>
-            <li>Consultar reportes y pruebas que pide la tarea.</li>
-            <li>Probar facturación, pagos y morosidad del sistema.</li>
-          </ul>
+          <div class="card-shell-right">
+            <h3>¿Qué se puede hacer aquí?</h3>
+            <ul>
+              <li>Ver información general del sistema.</li>
+              <li>Impersonar a un usuario para ver su vista de cliente.</li>
+              <li>
+                Consultar reportes y pruebas que pide el enunciado
+                (morosidad, pagos, etc.).
+              </li>
+              <li>
+                Probar facturación, pagos y morosidad sin conocer las
+                contraseñas de los clientes.
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Tarjeta 2: gestión de usuarios / impersonar -->
-    <section class="dashboard-card">
-      <div class="card-shell">
-        <div class="card-left">
-          <div>
+      <!-- Usuarios del sistema -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
             <h2>Usuarios del sistema</h2>
             <p>
               Seleccione un usuario para ver el portal como si fuera ese cliente.
-              Esta funcionalidad se usa para probar la consulta web del cliente
-              sin necesidad de conocer su contraseña.
             </p>
           </div>
-        </div>
 
-        <div class="card-right table-wrapper">
-          <table class="properties-table">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Nombre</th>
-                <th>Rol</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-usuarios">
-              <!-- Fila de ejemplo por si todavía no hay backend -->
-              <tr class="placeholder">
-                <td colspan="4">
-                  Aquí se cargarán los usuarios desde el backend.
-                  De momento se muestra un ejemplo con <strong>user_f0007</strong>.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="card-shell-right table-wrapper">
+            <table class="properties-table">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Nombre</th>
+                  <th>Rol</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-usuarios"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Buscar cliente -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
+            <h2>Buscar cliente</h2>
+            <p>
+              Permite buscar por identificación o finca.
+            </p>
+          </div>
+
+          <div class="card-shell-right">
+            <form id="admin-search-form" class="admin-search-form">
+              <div class="form-group">
+                <label for="admin-search-type">Tipo</label>
+                <select id="admin-search-type">
+                  <option value="finca">Por finca</option>
+                  <option value="identificacion">Por identificación</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="admin-search-value">Valor</label>
+                <input type="text" id="admin-search-value" />
+              </div>
+
+              <!-- NUEVO: Combo de clientes -->
+              <div class="form-group">
+                <label for="admin-clientes-list">Clientes registrados</label>
+                <select id="admin-clientes-list">
+                  <option value="">-- Seleccione un cliente --</option>
+                </select>
+                <p style="font-size:0.8rem;color:#666;margin-top:4px;">
+                  Al seleccionar un cliente se llenará automáticamente el tipo y el valor,
+                  y se ejecutará la búsqueda.
+                </p>
+              </div>
+              <!-- FIN NUEVO -->
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">Buscar</button>
+              </div>
+            </form>
+
+            <p id="admin-search-empty">
+              Ingrese criterios de búsqueda.
+            </p>
+
+            <div id="admin-search-table-wrapper" class="table-wrapper" style="display:none;">
+              <table class="properties-table">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Nombre</th>
+                    <th>Identificación</th>
+                    <th>Finca</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-admin-busqueda"></tbody>
+              </table>
+            </div>
+
+            <div class="cases-section">
+              <h3>Casos sugeridos</h3>
+
+              <div class="chip-row">
+                <span class="chip-label">Morosos:</span>
+                <button class="btn-chip suggested-finca" data-finca="F-0007">F-0007</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0021">F-0021</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0048">F-0048</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0013">F-0013</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0034">F-0034</button>
+              </div>
+
+              <div class="chip-row">
+                <span class="chip-label">Pagos XML:</span>
+                <button class="btn-chip suggested-finca" data-finca="F-0019">F-0019</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0003">F-0003</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0011">F-0011</button>
+                <button class="btn-chip suggested-finca" data-finca="F-0047">F-0047</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bitácora -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
+            <h2>Bitácora de cambios</h2>
+            <p>
+              Registra cambios realizados por el sistema.
+            </p>
+          </div>
+
+          <div class="card-shell-right">
+            <div class="filters-row">
+              <div class="form-group">
+                <label for="bitacora-tabla">Entidad</label>
+                <select id="bitacora-tabla">
+                  <option value="">Todas</option>
+                  <option value="Persona">Persona</option>
+                  <option value="Propiedad">Propiedad</option>
+                  <option value="Usuario">Usuario</option>
+                  <option value="Factura">Factura</option>
+                  <option value="Pago">Pago</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="bitacora-desde">Desde</label>
+                <input type="date" id="bitacora-desde" />
+              </div>
+
+              <div class="form-group">
+                <label for="bitacora-hasta">Hasta</label>
+                <input type="date" id="bitacora-hasta" />
+              </div>
+
+              <button id="btn-bitacora-filtrar" class="btn-primary">Filtrar</button>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="properties-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Entidad</th>
+                    <th>Llave</th>
+                    <th>Usuario</th>
+                    <th>IP</th>
+                    <th>Acción</th>
+                    <th>Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-bitacora">
+                  <tr><td colspan="7">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRUEBAS ADMINISTRATIVAS -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
+            <h2>Pruebas administrativas</h2>
+            <p>Procesos masivos del enunciado</p>
+          </div>
+
+          <div class="card-shell-right">
+            <button class="btn-primary admin-test-btn" data-action="facturar">Emitir facturación mensual</button>
+            <button class="btn-primary admin-test-btn" data-action="intereses">Procesar intereses de mora</button>
+            <button class="btn-primary admin-test-btn" data-action="pagos">Procesar pagos del XML</button>
+            <button class="btn-primary admin-test-btn" data-action="rango">Procesar rango XML completo</button>
+
+            <p id="admin-test-output" class="mt-2 small"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- REPORTES -->
+      <section class="dashboard-card">
+        <div class="card-shell">
+          <div class="card-shell-left gradient-card">
+            <h2>Reportes</h2>
+            <p>Reportes requeridos por el enunciado</p>
+          </div>
+
+          <div class="card-shell-right">
+            <div class="filters-row">
+              <select id="report-type">
+                <option value="morosidad">Morosidad</option>
+                <option value="pagosxml">Pagos XML</option>
+                <option value="pagosweb">Pagos Web</option>
+                <option value="consumo">Consumo por finca</option>
+              </select>
+              <button id="btn-report" class="btn-primary">Generar</button>
+            </div>
+
+            <div class="table-wrapper">
+              <table class="properties-table">
+                <thead id="thead-report"></thead>
+                <tbody id="tbody-report"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODAL DETALLE BITÁCORA -->
+      <div id="modal-bitacora" class="modal hidden">
+        <div class="modal-content">
+          <h3>Detalle de cambios</h3>
+          <pre id="modal-bitacora-pre"></pre>
+          <button id="close-modal-bitacora" class="btn-primary">Cerrar</button>
         </div>
       </div>
-    </section>
-  </main>
+
+    </main>
+  </div>
 
   <script src="script.js"></script>
 </body>

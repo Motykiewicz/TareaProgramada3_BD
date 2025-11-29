@@ -1,65 +1,70 @@
 USE TP3_Municipalidad;
 GO
+----------------------------------------------------------------------- sp_procesar_rango_operaciones
+-- aqui vamos a ejecutar todo el pipeline por decirlo asi 
+-- cargamos todo desde el primer dia hasta el ultimo 
+-- utilizando los demas SPs cargamos todo desde el xml, lo guardamos y le aplicamos las operaciones necesarias para que este todo listo 
+CREATE OR ALTER PROCEDURE dbo.sp_procesar_rango_operaciones
+    @FechaInicio DATE,
+    @FechaFin    DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
 
--- 1. Cargar día 2025-06-01 desde XML a staging
--- (aquí llamas al contenido de cargarXML.sql con @dia = '2025-06-01')
+    IF @FechaInicio IS NULL OR @FechaFin IS NULL
+    BEGIN
+        RAISERROR('Debe indicar @FechaInicio y @FechaFin.', 16, 1);
+        RETURN;
+    END;
+    -- pequenas validaciones 
+    IF @FechaFin < @FechaInicio
+    BEGIN
+        RAISERROR('@FechaFin no puede ser menor que @FechaInicio.', 16, 1);
+        RETURN;
+    END;
 
--- 2. Ejecutar MERGEs para ese día
--- (EXEC o simplemente incluir los scripts en orden)
+     DECLARE @fechaActual DATE = @FechaInicio;
 
--- 3. Ejecutar emisión de junio
-EXEC dbo.sp_emision_mensual @hoy = '2025-06-13';
+    WHILE @fechaActual <= @FechaFin
+    BEGIN
+        PRINT '=== Procesando día ' + CONVERT(varchar(10), @fechaActual, 120) + ' ===';
 
--- 4. Cargar y procesar pagos del 8 de julio
--- 4.1 cargar @dia = '2025-07-08' a st_*
--- 4.2 EXEC dbo.sp_merge_pagos;
+        
+        -- cargamos el xml de operacion para la fecha actual  
+       EXEC dbo.sp_cargar_xml_operacion @dia = @fechaActual;
 
--- 5. Repetir para 22 y 28 de octubre
+       
+        -- aqui pasamos los datos que ingresamos a las tablas intermediarias ( staging) a las tablas finales tablas finales
+        
+        EXEC dbo.sp_merge_personas;
+        EXEC dbo.sp_merge_propiedades;
+        EXEC dbo.sp_merge_propiedad_persona;
+        EXEC dbo.sp_merge_cc_impuesto;
+        EXEC dbo.sp_merge_medidores;
+        EXEC dbo.sp_merge_movimientos;
+        EXEC dbo.sp_merge_pagos;
 
--- 6. Ejecutar validacionesMorosidad.sql
 
+       
+        -- luego aplicamos los procesos masivos de ese dia 
+        EXEC dbo.sp_emision_mensual         @hoy = @fechaActual;
+        EXEC dbo.sp_calcular_intereses_mora @hoy = @fechaActual;
 
--- abajo hay pruebas simples
-
-
--- ver tablas 
-USE TP3_Municipalidad;
+        ---------------------------------------------------
+        SET @fechaActual = DATEADD(DAY, 1, @fechaActual);
+    END;
+END;
 GO
 
-SELECT TOP 5 * FROM Persona;
-SELECT TOP 5 * FROM Usuario;
-SELECT TOP 5 * FROM UsuarioPropiedad;
-SELECT TOP 5 * FROM Propiedad;
+----------------------------------------------------- para correrlo 
+EXEC dbo.sp_procesar_rango_operaciones
+     @FechaInicio = '2025-06-01',
+     @FechaFin    = '2025-10-31';
 
 
+------------------------------------------- prueba 
+SELECT TOP 20 * FROM Propiedad;
+SELECT TOP 20 * FROM Factura ORDER BY FacturaID;
+SELECT TOP 20 * FROM Pago ORDER BY PagoID;
 
--- top 10 personas 
-SELECT TOP 10 PersonaID, Identificacion, Nombre, Email, Telefono1, Telefono2
-FROM dbo.Persona
-ORDER BY PersonaID;
-
-
-
-
-USE TP3_Municipalidad;
-GO
-
--- Crear persona básica
-DECLARE @PersonaNuevaId INT;
-
-INSERT INTO Persona (Identificacion, Nombre)
-VALUES ('999999999', 'Persona Demo');
-
-SET @PersonaNuevaId = SCOPE_IDENTITY();
-
--- Crear usuario ligado a esa persona
-INSERT INTO Usuario (PersonaID, Rol, UsuarioLogin, HashPassword)
-VALUES (
-  @PersonaNuevaId,
-  'no-admin',                         -- o 'admin'
-  'usuario_demo',
-  HASHBYTES('SHA2_256', 'clave123')   -- contraseña en texto plano
-);
-
----------------------------
 
